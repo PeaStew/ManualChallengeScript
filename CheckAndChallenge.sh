@@ -1,7 +1,7 @@
 #!/bin/bash
 wait=0
 fail=0
-> failures.txt
+> /home/peastew/failures.txt
 while IFS='' read -r line || [[ -n "$line" ]]; do
         fqdn=$(echo $line | awk '{printf$1}')
         homeServer=$(echo $line | awk '{printf$2}')
@@ -11,30 +11,25 @@ while IFS='' read -r line || [[ -n "$line" ]]; do
         challengeRes=$(echo ${challenges} | jq -r '.rows[0].result')
         if [[ "$challengeRes" == 'wait' ]]
         then
-                echo "$fqdn : $challengeRes"
                 let wait++
         fi
         if [[ "$challengeRes" == 'fail' ]]
         then
-                echo "$fqdn : $challengeRes"
-                if [ $fail -lt 3 ]
-                then
-                        echo "curl -s \"https://securenodes$homeServer.zensystem.io/$tAddr/$nodeId/send\"" >> failures.txt
-                fi
+                echo "curl -s \"https://securenodes$homeServer.zensystem.io/$tAddr/$nodeId/send\"" >> failures.txt
                 let fail++
         fi
 
-done < nodeDetails.txt
+done < /home/peastew/nodeDetails.txt
 
-echo $wait
-echo $fail
+#echo $wait
+#echo $fail
 executed=$wait
 
 while IFS='' read -r line || [[ -n "$line" ]]; do
-        if [ $executed -ge 4 ]
+        if [ $executed -ge 3 ]
         then
                 exit 1
         fi
-        eval $line
+        eval $line > /dev/null
         let executed++
-done < failures.txt
+done < /home/peastew/failures.txt
