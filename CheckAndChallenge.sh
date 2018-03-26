@@ -1,6 +1,5 @@
 #!/bin/bash
 wait=0
-fail=0
 > failures
 > other
 
@@ -11,21 +10,23 @@ while IFS='' read -r line || [[ -n "$line" ]]; do
         tAddr=$(echo $line | awk '{printf$4}')
         challenges=$(curl -s "https://securenodes$homeServer.zensystem.io/api/grid/$nodeId/crs")
         challengeRes=$(echo ${challenges} | jq -r '.rows[0].result')
+        seconds=$(echo ${challenges} | jq -r '.rows[0].seconds')
         if [[ "$challengeRes" == 'wait' ]]
         then
                 let wait++
         elif [[ "$challengeRes" == 'fail' ]]
         then
                 echo "curl -s \"https://securenodes$homeServer.zensystem.io/$tAddr/$nodeId/send\"" >> failures
-                let fail++
+        elif [[ "$challengeRes" == 'confirm' ]] && [ $seconds -gt 300 ]
+        then
+                echo "curl -s \"https://securenodes$homeServer.zensystem.io/$tAddr/$nodeId/send\"" >> failures
+
         else
                 echo "$fqdn : $challengeRes" >> other
         fi
 
 done < /home/peastew/nodeDetails.txt
 
-#echo $wait
-#echo $fail
 executed=$wait
 
 while fails='' read -r line || [[ -n "$line" ]]; do
