@@ -20,7 +20,7 @@ while IFS='' read -r line || [[ -n "$line" ]]; do
         elif [[ "$challengeRes" == 'confirm' ]] && [ $seconds -gt 300 ]
         then
                 echo "curl -s \"https://securenodes$homeServer.zensystem.io/$tAddr/$nodeId/send\"" >> failures
-
+                let wait++
         else
                 echo "$fqdn : $challengeRes" >> other
         fi
