@@ -17,15 +17,19 @@ while IFS='' read -r line || [[ -n "$line" ]]; do
         elif [[ "$challengeRes" == 'fail' ]]
         then
                 echo "curl -s \"https://securenodes$homeServer.zensystem.io/$tAddr/$nodeId/send\"" >> failures
-        elif [[ "$challengeRes" == 'confirm' ]] && [ $seconds -gt 300 ]
-        then
-                echo "curl -s \"https://securenodes$homeServer.zensystem.io/$tAddr/$nodeId/send\"" >> failures
-                let wait++
         else
                 echo "$fqdn : $challengeRes" >> other
         fi
 
-done < /home/peastew/nodeDetails.txt
+        exceptions=$(curl -s "https://securenodes$homeServer.zensystem.io/api/grid/$nodeId/ex")
+        exceptionType=$(echo ${exceptions} | jq -r '.rows[0].etype')
+        exceptionResult=$(echo ${exceptions} | jq -r '.rows[0].end')
+        if [[ "$exceptionType" == 'chalmax' ]] && [[ "$exceptionResult" == 'null' ]]
+        then
+                echo "curl -s \"https://securenodes$homeServer.zensystem.io/$tAddr/$nodeId/send\"" >> failures
+        fi
+
+done < /root/nodeDetails.txt
 
 executed=$wait
 
