@@ -14,11 +14,14 @@ while IFS='' read -r line || [[ -n "$line" ]]; do
         if [[ "$challengeRes" == 'wait' ]]
         then
                 let wait++
+                continue
+        elif [[ "$challengeRes" == 'confirm' ]] || [[ "$challengeRes" == 'overlap' ]]
+        then
+                continue
         elif [[ "$challengeRes" == 'fail' ]]
         then
                 echo "curl -s \"https://securenodes$homeServer.zensystem.io/$tAddr/$nodeId/send\"" >> failures
-        else
-                echo "$fqdn : $challengeRes" >> other
+                continue
         fi
 
         exceptions=$(curl -s "https://securenodes$homeServer.zensystem.io/api/grid/$nodeId/ex")
